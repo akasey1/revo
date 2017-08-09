@@ -1,11 +1,15 @@
 package ru.yadaden.revo.storage;
 
+import java.util.List;
+
 import ru.yadaden.revo.model.BankAccount;
 import ru.yadaden.revo.model.BankUser;
 
 public interface BankStorage {
 
 	BankUser userByName(String username);
+
+	List<BankUser> allUsers();
 
 	BankAccount accountByNumber(String accountNumber);
 

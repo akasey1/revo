@@ -13,7 +13,7 @@ import lombok.Setter;
 @EqualsAndHashCode(of = { "accountNumber" })
 @RequiredArgsConstructor
 public class BankAccount implements Serializable {
-	private final BankUser owner;
+	private final String owner;
 	/**
 	 * Emulate auto-creating of account numbers
 	 */

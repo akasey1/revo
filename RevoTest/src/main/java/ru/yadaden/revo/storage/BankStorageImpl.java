@@ -1,5 +1,8 @@
 package ru.yadaden.revo.storage;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import ru.yadaden.revo.model.BankAccount;
@@ -34,5 +37,10 @@ public class BankStorageImpl implements BankStorage {
 			accounts.put(account.getAccountNumber(), account);
 		}
 		return accounts.get(account.getAccountNumber());
+	}
+
+	@Override
+	public List<BankUser> allUsers() {
+		return Collections.unmodifiableList(new ArrayList<>(users.values()));
 	}
 }

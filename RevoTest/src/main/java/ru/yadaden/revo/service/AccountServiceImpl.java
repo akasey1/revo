@@ -1,5 +1,8 @@
 package ru.yadaden.revo.service;
 
+import java.util.Collections;
+import java.util.List;
+
 import lombok.RequiredArgsConstructor;
 import ru.yadaden.revo.model.BankAccount;
 import ru.yadaden.revo.model.BankException;
@@ -7,20 +10,14 @@ import ru.yadaden.revo.model.BankUser;
 import ru.yadaden.revo.storage.BankStorage;
 
 @RequiredArgsConstructor
-public class BankServiceImpl implements BankService {
+public class AccountServiceImpl implements AccountService {
 
 	private final BankStorage storage;
 
 	@Override
-	public BankUser createUser(String userName) {
-		BankUser user = new BankUser(userName);
-		return storage.addUser(user);
-	}
-
-	@Override
 	public BankAccount createAccount(String userName) {
 		BankUser user = storage.userByName(userName);
-		BankAccount account = new BankAccount(user);
+		BankAccount account = new BankAccount(user.getUserName());
 		user.addAccount(account);
 		return storage.addAccount(account);
 	}
@@ -60,19 +57,25 @@ public class BankServiceImpl implements BankService {
 		}
 	}
 
+	@Override
+	public List<BankAccount> accountsByUser(String userName) {
+		return Collections.unmodifiableList(storage.userByName(userName).getAccounts().get());
+	}
+
+	@Override
+	public BankAccount findAccount(String account) throws BankException {
+		BankAccount bankAccount = storage.accountByNumber(account);
+		if (bankAccount == null) {
+			throw new BankException("Account " + account + " not found!");
+		}
+		return bankAccount;
+	}
+
 	private long calcAndValidateAmount(long oldAmount, long addition) throws BankException {
 		long newAmount = oldAmount + addition;
 		if (newAmount < 0) {
 			throw new BankException("Not enough money to do transaction!");
 		}
 		return newAmount;
-	}
-
-	private BankAccount findAccount(String account) throws BankException {
-		BankAccount bankAccount = storage.accountByNumber(account);
-		if (bankAccount == null) {
-			throw new BankException("Account " + account + " not found!");
-		}
-		return bankAccount;
 	}
 }
