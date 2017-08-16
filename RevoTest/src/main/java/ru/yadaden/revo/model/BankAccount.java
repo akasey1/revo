@@ -13,6 +13,7 @@ import lombok.Setter;
 @EqualsAndHashCode(of = { "accountNumber" })
 @RequiredArgsConstructor
 public class BankAccount implements Serializable {
+	private static final long serialVersionUID = -923774835292056773L;
 	private final String owner;
 	/**
 	 * Emulate auto-creating of account numbers

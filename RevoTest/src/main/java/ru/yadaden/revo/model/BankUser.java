@@ -16,6 +16,7 @@ import lombok.Setter;
 @EqualsAndHashCode(of = { "userName" })
 @RequiredArgsConstructor
 public class BankUser implements Serializable {
+	private static final long serialVersionUID = 7975997562567930441L;
 
 	/**
 	 * unique login of user
