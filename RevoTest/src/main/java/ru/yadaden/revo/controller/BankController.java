@@ -2,8 +2,6 @@ package ru.yadaden.revo.controller;
 
 import java.util.List;
 
-import com.google.gson.Gson;
-
 import lombok.RequiredArgsConstructor;
 import ru.yadaden.revo.model.BankAccount;
 import ru.yadaden.revo.model.BankException;
@@ -20,12 +18,6 @@ import spark.Response;
 @RequiredArgsConstructor
 public class BankController {
 
-	public static final String TO = "to";
-	public static final String FROM = "from";
-	public static final String AMOUNT = "amount";
-	public static final String ACCOUNT = "account";
-	public static final String USERNAME = "username";
-
 	private final UserService userService;
 	private final AccountService accountService;
 
@@ -33,40 +25,56 @@ public class BankController {
 		return userService.getAllUsers();
 	}
 
-	public BankUser addUser(Request request, Response response) {
-		return userService.createUser(request.queryParams(USERNAME));
+	public BankUser addUser(Request request, Response response) throws BankException {
+		ParsedRequest parsed = new ParsedRequest(request);
+		validateUsername(parsed);
+		return userService.createUser(parsed.getUsername());
 	}
 
-	public BankUser getUser(Request request, Response response) {
-		return userService.findUser(request.queryParams(USERNAME));
+	public BankUser getUser(Request request, Response response) throws BankException {
+		ParsedRequest parsed = new ParsedRequest(request);
+		validateUsername(parsed);
+		return userService.findUser(parsed.getUsername());
 	}
 
-	public BankAccount addAccount(Request request, Response response) {
-		return accountService.createAccount(request.queryParams(USERNAME));
+	public BankAccount addAccount(Request request, Response response) throws BankException {
+		ParsedRequest parsed = new ParsedRequest(request);
+		validateUsername(parsed);
+		return accountService.createAccount(parsed.getUsername());
 	}
 
 	public BankAccount getAccount(Request request, Response response) throws BankException {
-		return accountService.getAccount(request.queryParams(ACCOUNT));
+		ParsedRequest parsed = new ParsedRequest(request);
+		return accountService.getAccount(parsed.getAccount());
 	}
 
 	public BankAccount addMoney(Request request, Response response) throws BankException {
-		long amount;
-		try {
-			amount = Long.parseLong(request.queryParams(AMOUNT));
-		} catch (NumberFormatException e) {
-			throw new BankException("Amount is not a number (wrong format).");
-		}
-		accountService.addMoney(request.queryParams(ACCOUNT), amount);
-		return accountService.getAccount(request.queryParams(ACCOUNT));
+		ParsedRequest parsed = new ParsedRequest(request);
+		long amount = parseAmount(parsed);
+		accountService.addMoney(parsed.getAccount(), amount);
+		return accountService.getAccount(parsed.getAccount());
 	}
 
 	public String transfer(Request request, Response response) throws BankException {
-		accountService.transfer(request.queryParams(FROM), request.queryParams(TO),
-				Long.parseLong(request.queryParams(AMOUNT)));
+		ParsedRequest parsed = new ParsedRequest(request);
+		long amount = parseAmount(parsed);
+		accountService.transfer(parsed.getFrom(), parsed.getTo(), amount);
 		return "OK";
 	}
 
-	public String toJson(Object object) {
-		return new Gson().toJson(object);
+	private long parseAmount(ParsedRequest parsed) throws BankException {
+		long amount;
+		try {
+			amount = Long.parseLong(parsed.getAmount());
+		} catch (NumberFormatException e) {
+			throw new BankException("Amount is not a number (wrong format).");
+		}
+		return amount;
+	}
+
+	private void validateUsername(ParsedRequest parsed) throws BankException {
+		if (parsed.getUsername() == null || "".equals(parsed.getUsername())) {
+			throw new BankException("Username is not defined!");
+		}
 	}
 }

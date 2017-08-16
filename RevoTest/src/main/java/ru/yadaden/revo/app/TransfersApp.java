@@ -6,6 +6,8 @@ import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.Spark.stop;
 
+import com.google.gson.Gson;
+
 import ru.yadaden.revo.controller.BankController;
 import ru.yadaden.revo.model.BankException;
 import ru.yadaden.revo.model.ResponseError;
@@ -28,15 +30,15 @@ public class TransfersApp implements AppConfiguration {
 	private TransfersApp() {
 		controller = getControllerBean();
 
-		get("/users", controller::allUsers, controller::toJson);
-		post("/users", controller::addUser, controller::toJson);
+		get("/users", controller::allUsers, this::toJson);
+		post("/users", controller::addUser, this::toJson);
 
-		get("/user", controller::getUser, controller::toJson);
+		get("/user", controller::getUser, this::toJson);
 
-		get("/account", controller::getAccount, controller::toJson);
-		post("/account", controller::addAccount, controller::toJson);
-		post("/account/add", controller::addMoney, controller::toJson);
-		post("/account/transfer", controller::transfer, controller::toJson);
+		get("/account", controller::getAccount, this::toJson);
+		post("/account", controller::addAccount, this::toJson);
+		post("/account/add", controller::addMoney, this::toJson);
+		post("/account/transfer", controller::transfer, this::toJson);
 
 		after((req, res) -> {
 			res.type("application/json");
@@ -44,11 +46,11 @@ public class TransfersApp implements AppConfiguration {
 
 		exception(BankException.class, (e, req, res) -> {
 			res.status(400);
-			res.body(controller.toJson(new ResponseError(e)));
+			res.body(toJson(new ResponseError(e)));
 		});
 		exception(Exception.class, (e, req, res) -> {
 			res.status(500);
-			res.body(controller.toJson(new ResponseError(e)));
+			res.body(toJson(new ResponseError(e)));
 		});
 
 		get("/stop", (req, res) -> {
@@ -78,5 +80,9 @@ public class TransfersApp implements AppConfiguration {
 	@Override
 	public AccountService getAccountServiceBean() {
 		return new AccountServiceImpl(getStorageBean());
+	}
+
+	public String toJson(Object object) {
+		return new Gson().toJson(object);
 	}
 }
