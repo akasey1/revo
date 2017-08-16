@@ -1,8 +1,13 @@
-apply plugin: 'java-library'
+plugins {
+    id 'java'
+    id 'application'
+}
 
 repositories {
     jcenter()
 }
+
+mainClassName = 'ru.yadaden.revo.app.TransfersApp'
 
 dependencies {
 	compile "com.sparkjava:spark-core:2.6.0"
