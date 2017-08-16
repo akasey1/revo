@@ -25,18 +25,12 @@ public class BankStorageImpl implements BankStorage {
 
 	@Override
 	public BankUser addUser(BankUser bankUser) {
-		if (!users.containsKey(bankUser.getUserName())) {
-			users.put(bankUser.getUserName(), bankUser);
-		}
-		return users.get(bankUser.getUserName());
+		return users.computeIfAbsent(bankUser.getUserName(), (k) -> bankUser);
 	}
 
 	@Override
 	public BankAccount addAccount(BankAccount account) {
-		if (!accounts.contains(account.getAccountNumber())) {
-			accounts.put(account.getAccountNumber(), account);
-		}
-		return accounts.get(account.getAccountNumber());
+		return accounts.computeIfAbsent(account.getAccountNumber(), (k) -> account);
 	}
 
 	@Override

@@ -19,7 +19,11 @@ public class AccountServiceImpl implements AccountService {
 		BankUser user = storage.userByName(userName);
 		BankAccount account = new BankAccount(user.getUserName());
 		user.addAccount(account);
-		return storage.addAccount(account);
+		try {
+			return storage.addAccount(account);
+		} catch (BankException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
@@ -63,8 +67,12 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public BankAccount findAccount(String account) throws BankException {
-		BankAccount bankAccount = storage.accountByNumber(account);
+	public BankAccount getAccount(String account) {
+		return storage.accountByNumber(account);
+	}
+
+	private BankAccount findAccount(String account) throws BankException {
+		BankAccount bankAccount = getAccount(account);
 		if (bankAccount == null) {
 			throw new BankException("Account " + account + " not found!");
 		}

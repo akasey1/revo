@@ -3,6 +3,7 @@ package ru.yadaden.revo.storage;
 import java.util.List;
 
 import ru.yadaden.revo.model.BankAccount;
+import ru.yadaden.revo.model.BankException;
 import ru.yadaden.revo.model.BankUser;
 
 public interface BankStorage {
@@ -20,6 +21,6 @@ public interface BankStorage {
 	 */
 	BankUser addUser(BankUser bankUser);
 
-	BankAccount addAccount(BankAccount account);
+	BankAccount addAccount(BankAccount account) throws BankException;
 
 }

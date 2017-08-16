@@ -15,6 +15,9 @@ import ru.yadaden.revo.storage.BankStorageImpl;
 public class BankServicesTest {
 
 	private static final String USERNAME = "USER";
+	private static final int threads = 5;
+	private static final int tasks = 1000;
+
 	private BankStorage bankStorage;
 	private UserService userService;
 	private AccountService accountService;
@@ -46,10 +49,11 @@ public class BankServicesTest {
 		String account2 = accountService.createAccount(USERNAME).getAccountNumber();
 		String account3 = accountService.createAccount(USERNAME).getAccountNumber();
 
-		accountService.addMoney(account1, 50000);
+		int startAmount = 100 * tasks;
+		accountService.addMoney(account1, startAmount);
 
-		ExecutorService pool = Executors.newFixedThreadPool(20);
-		for (int i = 0; i < 200; i++) {
+		ExecutorService pool = Executors.newFixedThreadPool(threads);
+		for (int i = 0; i < tasks; i++) {
 			pool.submit(() -> {
 				try {
 					accountService.transfer(account1, account2, 100);
@@ -65,15 +69,15 @@ public class BankServicesTest {
 		pool.shutdown();
 		pool.awaitTermination(60, TimeUnit.SECONDS);
 
-		Assert.assertEquals(50000, bankStorage.accountByNumber(account1).getAmount());
+		Assert.assertEquals(startAmount, bankStorage.accountByNumber(account1).getAmount());
 		Assert.assertEquals(0, bankStorage.accountByNumber(account2).getAmount());
 		Assert.assertEquals(0, bankStorage.accountByNumber(account3).getAmount());
 	}
 
 	@Test
 	public void testMultithreadCreate() throws InterruptedException {
-		ExecutorService pool = Executors.newFixedThreadPool(20);
-		for (int i = 0; i < 100; i++) {
+		ExecutorService pool = Executors.newFixedThreadPool(threads);
+		for (int i = 0; i < tasks; i++) {
 			final int j = i;
 			pool.submit(() -> {
 				userService.createUser(USERNAME);
@@ -85,12 +89,14 @@ public class BankServicesTest {
 			});
 		}
 		pool.shutdown();
-		pool.awaitTermination(60, TimeUnit.SECONDS);
+		while (!pool.awaitTermination(60, TimeUnit.SECONDS))
+			;
 
 		Assert.assertNotNull(bankStorage.userByName(USERNAME));
-		Assert.assertEquals(200, bankStorage.userByName(USERNAME).getAccounts().get().size());
+		Assert.assertEquals(1 + tasks, userService.getAllUsers().size());
+		Assert.assertEquals(tasks * 2, bankStorage.userByName(USERNAME).getAccounts().get().size());
 
-		for (int i = 0; i < 100; i++) {
+		for (int i = 0; i < tasks; i++) {
 			Assert.assertNotNull(bankStorage.userByName(USERNAME + i));
 			Assert.assertEquals(2, bankStorage.userByName(USERNAME + i).getAccounts().get().size());
 		}

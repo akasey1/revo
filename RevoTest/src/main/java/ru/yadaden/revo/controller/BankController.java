@@ -13,6 +13,10 @@ import ru.yadaden.revo.service.UserService;
 import spark.Request;
 import spark.Response;
 
+/**
+ * Controller is used to pass user requests to service beans, return response,
+ * validate parameters
+ */
 @RequiredArgsConstructor
 public class BankController {
 
@@ -42,12 +46,18 @@ public class BankController {
 	}
 
 	public BankAccount getAccount(Request request, Response response) throws BankException {
-		return accountService.findAccount(request.queryParams(ACCOUNT));
+		return accountService.getAccount(request.queryParams(ACCOUNT));
 	}
 
 	public BankAccount addMoney(Request request, Response response) throws BankException {
-		accountService.addMoney(request.queryParams(ACCOUNT), Long.parseLong(request.queryParams(AMOUNT)));
-		return accountService.findAccount(request.queryParams(ACCOUNT));
+		long amount;
+		try {
+			amount = Long.parseLong(request.queryParams(AMOUNT));
+		} catch (NumberFormatException e) {
+			throw new BankException("Amount is not a number (wrong format).");
+		}
+		accountService.addMoney(request.queryParams(ACCOUNT), amount);
+		return accountService.getAccount(request.queryParams(ACCOUNT));
 	}
 
 	public String transfer(Request request, Response response) throws BankException {
